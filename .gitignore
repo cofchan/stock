@@ -1,0 +1,36 @@
+# Java/Maven build output
+backend/target/
+*.class
+*.jar
+*.war
+
+# Node/npm dependencies and build output
+frontend/node_modules/
+frontend/dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+*.local
+
+# IDE and OS files
+.idea/
+*.iml
+.vscode/*.code-workspace
+.DS_Store
+Thumbs.db
+
+# Logs and temporary files
+*.log
+*.tmp
+*.swp
+
+# Container artifacts and local image exports
+*.tar
+*.tar.gz
+*.oci
+docker-images/
