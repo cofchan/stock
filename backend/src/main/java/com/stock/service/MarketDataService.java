@@ -30,6 +30,7 @@ public class MarketDataService {
             liveIndex("^HSI", "Hang Seng", 26352.72, 188.14, 0.72),
             liveIndex("^HSCE", "HS China Enterprises", 9465.15, 102.41, 1.09),
             liveIndex("^GSPC", "S&P 500", 6796.86, -14.23, -0.21),
+            liveIndex("^DJI", "Dow Jones", 47289.33, -386.21, -0.81),
             liveIndex("^IXIC", "Nasdaq Composite", 23004.54, 65.39, 0.29)
         ), quotes("all"));
     }

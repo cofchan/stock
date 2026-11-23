@@ -4,8 +4,9 @@ A lightweight HK and US stock market dashboard with a Vue 3 frontend and a Java 
 
 ## Features
 
-- View market indexes for Hong Kong and US markets.
+- View market indexes for Hong Kong and US markets, including the Dow Jones Industrial Average.
 - View a starter watchlist containing HK and US equities.
+- Add stocks to or remove stocks from the watchlist directly in the UI; changes are saved in the browser.
 - Search for a stock by ticker/code or company name.
 - Display live quote data when Yahoo Finance is available.
 - Display price history for `1D`, `1M`, and `1Y` periods.
@@ -119,13 +120,17 @@ npm run build     # Create a production build
 npm run preview   # Preview the production build
 ```
 
+## Maintain the watchlist
+
+Use the search box in the Market watch section to find a stock by ticker/code or company name. Search results include an `Add` button for stocks that are not already in the watchlist. Select `Remove` on a watchlist row to remove it. The current watchlist is stored in the browser's local storage, so it persists across refreshes in that browser. Clearing site data resets the list to the starter watchlist.
+
 ## REST API
 
 All routes are served below `/api`.
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/overview` | Market indexes and the default watchlist quotes. |
+| `GET` | `/api/overview` | Market indexes, including Dow Jones (`^DJI`), and the default watchlist quotes. |
 | `GET` | `/api/quotes?market=all` | Quotes filtered by `all`, `HK`, or `US`. |
 | `GET` | `/api/search?q=apple` | Searches Yahoo Finance for equity symbols and names. |
 | `GET` | `/api/quotes/{symbol}` | Current quote for a symbol. |
