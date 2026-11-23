@@ -102,13 +102,21 @@ public class MarketDataService {
     }
 
     private Quote resolveQuote(String symbol) {
-        return fallbackQuotes.stream().filter(q -> q.symbol().equalsIgnoreCase(symbol)).findFirst()
+        String normalizedSymbol = symbol == null ? "" : symbol.trim();
+        return fallbackQuotes.stream().filter(q -> q.symbol().equalsIgnoreCase(normalizedSymbol)).findFirst()
             .orElseGet(() -> {
                 try {
-                    YahooFinanceClient.Snapshot snapshot = marketClient.snapshot(symbol);
-                    return new Quote(symbol, symbol, "US", snapshot.price(), snapshot.change(), snapshot.changePercent(), snapshot.currency(), 0);
+                    YahooFinanceClient.Snapshot snapshot = marketClient.snapshot(normalizedSymbol);
+                    String market = normalizedSymbol.toUpperCase().endsWith(".HK") ? "HK" : "US";
+                    String name = marketClient.search(normalizedSymbol).stream()
+                        .filter(result -> result.symbol().equalsIgnoreCase(normalizedSymbol))
+                        .map(YahooFinanceClient.SearchResult::name)
+                        .findFirst()
+                        .orElse(normalizedSymbol);
+                    return new Quote(normalizedSymbol, name, market, snapshot.price(), snapshot.change(), snapshot.changePercent(), snapshot.currency(), 0);
                 } catch (RuntimeException ex) {
-                    return new Quote(symbol, symbol, "US", 0, 0, 0, "USD", 0);
+                    String market = normalizedSymbol.toUpperCase().endsWith(".HK") ? "HK" : "US";
+                    return new Quote(normalizedSymbol, normalizedSymbol, market, 0, 0, 0, "USD", 0);
                 }
             });
     }

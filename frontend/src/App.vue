@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 
 const overview = ref({ indexes: [], movers: [] })
 const watchlist = ref([])
@@ -19,6 +19,7 @@ const searchResults = ref(null)
 const searching = ref(false)
 const searchError = ref('')
 const watchlistStorageKey = 'stock-dashboard-watchlist'
+let refreshTimer
 
 const filteredQuotes = computed(() => {
   const query = searchQuery.value.trim().toLowerCase()
@@ -78,11 +79,25 @@ async function loadOverview() {
   } catch (error) {
     storedWatchlist = null
   }
-  watchlist.value = Array.isArray(storedWatchlist)
+  const savedQuotes = Array.isArray(storedWatchlist)
     ? storedWatchlist.map(quote => liveQuotes.get(quote.symbol) ?? quote)
     : overview.value.movers
+  const refreshedQuotes = await Promise.all(savedQuotes.map(async quote => {
+    try {
+      const response = await fetch(`/api/quotes/${encodeURIComponent(quote.symbol)}`)
+      return response.ok ? await response.json() : quote
+    } catch (error) {
+      return quote
+    }
+  }))
+  watchlist.value = refreshedQuotes
   persistWatchlist()
-  if (!selected.value) await selectQuote(overview.value.movers[0])
+  if (!selected.value) {
+    await selectQuote(watchlist.value[0] ?? overview.value.movers[0])
+  } else {
+    const refreshedSelected = watchlist.value.find(quote => quote.symbol === selected.value.symbol)
+    if (refreshedSelected) await selectQuote(refreshedSelected)
+  }
   loading.value = false
 }
 function persistWatchlist() {
@@ -150,7 +165,11 @@ async function searchStock() {
   }
 }
 watch(range, () => selected.value && selectQuote(selected.value))
-onMounted(loadOverview)
+onMounted(() => {
+  loadOverview()
+  refreshTimer = window.setInterval(loadOverview, 60_000)
+})
+onUnmounted(() => window.clearInterval(refreshTimer))
 </script>
 
 <template>
@@ -159,10 +178,10 @@ onMounted(loadOverview)
       <div class="brand"><span class="brand-mark">↗</span><span>stock<span class="accent">.</span></span></div>
       <nav><a class="active">Overview <span>⌂</span></a><a>Watchlist <span>☆</span></a><a>Dividends <span>◒</span></a></nav>
       <div class="sidebar-note"><span class="live-dot"></span> Markets live<br><small>Last updated 2 min ago</small></div>
-      <div class="user"><div class="avatar">JC</div><div><strong>Jamie Chen</strong><small>Personal portfolio</small></div><span>•••</span></div>
+      <div class="user"><div><strong>My portfolio</strong><small>Personal portfolio</small></div><span>•••</span></div>
     </aside>
     <main class="content">
-      <header><div><p class="eyebrow">SATURDAY, NOVEMBER 22, 2025</p><h1>Good morning, Jamie <span>✦</span></h1><p class="subtle">Here’s what’s happening in your markets today.</p></div><button class="refresh" @click="loadOverview">↻ Refresh</button></header>
+      <header><div><p class="eyebrow">SATURDAY, NOVEMBER 22, 2025</p><h1>Good morning <span>✦</span></h1><p class="subtle">Here’s what’s happening in your markets today.</p></div><button class="refresh" @click="loadOverview">↻ Refresh</button></header>
       <section class="index-grid">
         <article v-for="index in overview.indexes" :key="index.symbol" class="index-card"><div class="card-top"><span>{{ index.name }}</span><span class="tiny-symbol">{{ index.symbol.replace('^','') }}</span></div><strong>{{ index.value.toLocaleString() }}</strong><span :class="index.change >= 0 ? 'positive' : 'negative'">{{ index.change >= 0 ? '+' : '' }}{{ index.change }} ({{ index.changePercent }}%)</span><div class="sparkline" :class="index.change >= 0 ? 'up' : 'down'"><i></i><i></i><i></i><i></i><i></i><i></i></div></article>
       </section>

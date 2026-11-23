@@ -122,7 +122,7 @@ npm run preview   # Preview the production build
 
 ## Maintain the watchlist
 
-Use the search box in the Market watch section to find a stock by ticker/code or company name. Search results include an `Add` button for stocks that are not already in the watchlist. Select `Remove` on a watchlist row to remove it. The current watchlist is stored in the browser's local storage, so it persists across refreshes in that browser. Clearing site data resets the list to the starter watchlist.
+Use the search box in the Market watch section to find a stock by ticker/code or company name. Search results include an `Add` button for stocks that are not already in the watchlist. Select `Remove` on a watchlist row to remove it. Prices refresh when the page loads, when you select `Refresh`, and automatically every 60 seconds. The current watchlist is stored in the browser's local storage, so it persists across refreshes in that browser. Clearing site data resets the list to the starter watchlist.
 
 ## REST API
 
